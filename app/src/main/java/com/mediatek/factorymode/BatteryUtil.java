@@ -49,7 +49,7 @@ public class BatteryUtil {
 
     private static String mCmdString = "cat /sys/class/power_supply/battery/";
     public static final int EVENT_UPDATE = 1;
-    private static final float FORMART_TEN = 10.0f;
+    private static final float FORMART_TEN = 1000.0f;
 
     private static final String[] mFiles = { "current_now", "mA" };
     

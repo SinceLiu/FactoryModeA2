@@ -41,22 +41,22 @@ public class Signal extends BaseTestActivity implements OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActionBar.LayoutParams lp =new  ActionBar.LayoutParams(
-        	android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-        	android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-        	Gravity.CENTER);
+        ActionBar.LayoutParams lp = new ActionBar.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                Gravity.CENTER);
 
-		View mView =  LayoutInflater.from(this).inflate(R.layout.title, new LinearLayout(this), false);
-		TextView mTextView = (TextView) mView.findViewById(R.id.action_bar_title);
-		getActionBar().setCustomView(mView, lp); 
-	
-		mTextView.setText(getTitle());
+        View mView = LayoutInflater.from(this).inflate(R.layout.title, new LinearLayout(this), false);
+        TextView mTextView = (TextView) mView.findViewById(R.id.action_bar_title);
+        getActionBar().setCustomView(mView, lp);
 
-		getActionBar().setDisplayShowHomeEnabled(false);
-		getActionBar().setDisplayShowTitleEnabled(false);
-		getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-		getActionBar().setDisplayShowCustomEnabled(true);
-		getActionBar().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
+        mTextView.setText(getTitle());
+
+        getActionBar().setDisplayShowHomeEnabled(false);
+        getActionBar().setDisplayShowTitleEnabled(false);
+        getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        getActionBar().setDisplayShowCustomEnabled(true);
+        getActionBar().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
 
         setContentView(R.layout.signal);
 
@@ -75,16 +75,16 @@ public class Signal extends BaseTestActivity implements OnClickListener {
     protected void onResume() {
         super.onResume();
         String simOper = SystemProperties.get("gsm.sim.operator.numeric", "46099");
-        if("46000".equals(simOper) || "46002".equals(simOper) || "46007".equals(simOper) || "46008".equals(simOper)) {
+        if ("46000".equals(simOper) || "46002".equals(simOper) || "46007".equals(simOper) || "46008".equals(simOper)) {
             unknownSim = false;
-        } else if("46001".equals(simOper) || "46006".equals(simOper) || "46009".equals(simOper)) {
+        } else if ("46001".equals(simOper) || "46006".equals(simOper) || "46009".equals(simOper)) {
             unknownSim = false;
-        } else if("46003".equals(simOper) || "46005".equals(simOper) || "46011".equals(simOper)) {
+        } else if ("46003".equals(simOper) || "46005".equals(simOper) || "46011".equals(simOper)) {
             unknownSim = false;
         } else {
             unknownSim = true;
         }
-        if(unknownSim) {
+        if (unknownSim) {
             mBtServiceCall.setEnabled(false);
         } else {
             mBtServiceCall.setEnabled(true);
@@ -97,7 +97,7 @@ public class Signal extends BaseTestActivity implements OnClickListener {
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(SystemProperties.getBoolean("ro.cenon_wearable", false)) {
+        if (SystemProperties.getBoolean("ro.cenon_wearable", false)) {
             return;
         }
         /*AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -120,7 +120,7 @@ public class Signal extends BaseTestActivity implements OnClickListener {
     }
 
     public void onClick(View v) {
-        switch(v.getId()) {
+        switch (v.getId()) {
             case R.id.emergency_call:
                 Intent intent112 = new Intent(Intent.ACTION_CALL_PRIVILEGED);
                 intent112.setData(Uri.fromParts("tel", "112", null));
@@ -129,11 +129,11 @@ public class Signal extends BaseTestActivity implements OnClickListener {
             case R.id.service_call:
                 Intent intent = new Intent(Intent.ACTION_CALL_PRIVILEGED);
                 String simOper = SystemProperties.get("gsm.sim.operator.numeric", "46099");
-                if("46000".equals(simOper) || "46002".equals(simOper) || "46007".equals(simOper) || "46008".equals(simOper)) {
+                if ("46000".equals(simOper) || "46002".equals(simOper) || "46007".equals(simOper) || "46008".equals(simOper)) {
                     intent.setData(Uri.fromParts("tel", "10086", null));
-                } else if("46001".equals(simOper) || "46006".equals(simOper) || "46009".equals(simOper)) {
+                } else if ("46001".equals(simOper) || "46006".equals(simOper) || "46009".equals(simOper)) {
                     intent.setData(Uri.fromParts("tel", "10010", null));
-                } else if("46003".equals(simOper) || "46005".equals(simOper) || "46011".equals(simOper)) {
+                } else if ("46003".equals(simOper) || "46005".equals(simOper) || "46011".equals(simOper)) {
                     intent.setData(Uri.fromParts("tel", "10000", null));
                 } else {
                     intent.setData(Uri.fromParts("tel", "112", null));
@@ -148,6 +148,8 @@ public class Signal extends BaseTestActivity implements OnClickListener {
                 Utils.SetPreferences(this, mSp, R.string.telephone_name, AppDefine.FT_FAILED);
                 finish();
                 break;
+            default:
+                break;
         }
-    };
+    }
 }

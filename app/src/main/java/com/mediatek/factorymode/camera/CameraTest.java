@@ -148,7 +148,7 @@ public class CameraTest extends BaseTestActivity implements OnClickListener {
             }
             Camera.Parameters parameters = mCamera.getParameters();
             parameters.setPictureFormat(PixelFormat.JPEG);
-            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+//            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
             Size size = parameters.getPreviewSize();
 
             List<Size> sizes = parameters.getSupportedPreviewSizes();

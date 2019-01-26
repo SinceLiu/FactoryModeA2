@@ -114,7 +114,7 @@ public class Bluetooth extends BaseTestActivity implements OnClickListener {
                     BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
             registerReceiver(mReceiver, filter_finished);
             mBlueFlag = true;
-            while (mAdapter.startDiscovery() == false) {
+            while (!mAdapter.startDiscovery()) {
                 mAdapter.startDiscovery();
             }
         }
@@ -142,10 +142,24 @@ public class Bluetooth extends BaseTestActivity implements OnClickListener {
         }
     }
 
+    @Override
+    protected void onPause(){
+        super.onPause();
+        if(isFinishing()){
+            if(mBlueFlag){
+                unregisterReceiver(mReceiver);
+                mBlueFlag = false;
+            }
+            mAdapter.disable();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(mBlueFlag == true){
+        if(mBlueFlag){
             unregisterReceiver(mReceiver);
+            mBlueFlag = false;
         }
         mAdapter.disable();
     }
@@ -195,6 +209,7 @@ public class Bluetooth extends BaseTestActivity implements OnClickListener {
         }
     };
 
+    @Override
     public void onClick(View v) {
         Utils.SetPreferences(this, mSp, R.string.bluetooth_name,
                 (v.getId() == mBtOk.getId()) ? AppDefine.FT_SUCCESS : AppDefine.FT_FAILED);

@@ -2,7 +2,10 @@
 package com.mediatek.factorymode;
 
 import android.app.Activity;
+import android.os.IBinder;
+import android.os.Parcel;
 import android.os.SystemProperties;
+import android.os.ServiceManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,9 +38,13 @@ import android.widget.LinearLayout;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 public class DeviceInfo extends BaseTestActivity implements OnClickListener {
     public static final String TAG = "DeviceInfo";
@@ -50,6 +57,7 @@ public class DeviceInfo extends BaseTestActivity implements OnClickListener {
     private TextView mWifiMac;
     private TextView mTpFWVersion;
     private TextView mRfInfo;
+    private TextView mBaInfo;
     private LinearLayout mMeidLayout;
     private LinearLayout mTpFWLayout;
 
@@ -64,11 +72,15 @@ public class DeviceInfo extends BaseTestActivity implements OnClickListener {
 
     private SharedPreferences mSp;
     private String meid;
-    private String imei1, imei2, snCheck, MotherBoader;
+    private String imei1, imei2,  MotherBoader;
     private String snStr;
     private String meidStr = null;
     private String imeiStr = null;
     private String wifiMacStr = null;
+
+    private String rfCheck;
+    private IBinder binder;
+    private static int TYPE_GET_PHASECHECK = 5;
 
     private final static String CUSTOM_VERSION="ro.build.display.id";
     private final static String CUSTOM_VERSION_DATE="ro.build.date";
@@ -76,7 +88,6 @@ public class DeviceInfo extends BaseTestActivity implements OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ActionBar.LayoutParams lp =new  ActionBar.LayoutParams(
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                 android.view.ViewGroup.LayoutParams.MATCH_PARENT,
@@ -102,27 +113,14 @@ public class DeviceInfo extends BaseTestActivity implements OnClickListener {
         imei1 = telephony.getDeviceId();
         imei2 = telephony.getDeviceId();
         snStr = SystemProperties.get("ro.boot.serialno");
-        snCheck = SystemProperties.get("gsm.serial");
-        System.out.println("snCheck=["+snCheck.trim()+"]");
-        String s1=null, s2=null;
-        try {
-            s1 = snCheck.substring(60, 61);
-            s2 = snCheck.substring(61, 62);
-            int i1 = Integer.parseInt(s1);
-            int i2 = Integer.parseInt(s2);
-            if(i1 * 10 + i2 == 10) {
-                snCheck = getString(R.string.Success);//"success 10P";
-            }else{
-                snCheck = getString(R.string.Failed);//"fail";
-            }
-        } catch (Exception e) {
-            snCheck = getString(R.string.Failed);//"fail";
-        }
+        binder = ServiceManager.getService("phasechecknative");
 
-        MotherBoader = "hct6737m_35g_n";
-        if(SystemProperties.getBoolean("ro.project.a873", false)) {
-            MotherBoader = "A873";
-        }
+        rfCheck = getPhaseCheck();
+
+        MotherBoader = "DSL_L321_011";
+//        if(SystemProperties.getBoolean("ro.project.a873", false)) {
+//            MotherBoader = "A873";
+//        }
     }
 
     @Override
@@ -136,6 +134,7 @@ public class DeviceInfo extends BaseTestActivity implements OnClickListener {
         mSn = (TextView) findViewById(R.id.sn);
         mWifiMac = (TextView) findViewById(R.id.wifi_mac);
         mRfInfo = (TextView) findViewById(R.id.rf_info);
+        mBaInfo = (TextView) findViewById(R.id.battery_info);
         mMeidLayout = (LinearLayout) findViewById(R.id.device_meid_layout);
         if(!SystemProperties.getBoolean("ro.mtk_c2k_support", false)) {
             mMeidLayout.setVisibility(View.GONE);
@@ -165,7 +164,8 @@ public class DeviceInfo extends BaseTestActivity implements OnClickListener {
         mImei.setText(imeiStr);
         mSn.setText(snStr);
         updateWifiAddress();
-        mRfInfo.setText(snCheck);
+        mRfInfo.setText(rfCheck);
+        mBaInfo.setText(readInfo("/sys/class/power_supply/battery/battery_id"));
 
         mBtOK = (Button) findViewById(R.id.deviceinfo_bt_ok);
         mBtOK.setOnClickListener(this);
@@ -180,7 +180,7 @@ public class DeviceInfo extends BaseTestActivity implements OnClickListener {
     public void onClick(View v) {
         if(v.getId() == mToEM.getId()) {
             Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.setClassName("com.mediatek.engineermode", "com.mediatek.engineermode.EngineerMode");
+            intent.setClassName("com.sprd.engineermode", "com.sprd.engineermode.EngineerModeActivity");
             startActivity(intent);
         } else {
             Utils.SetPreferences(this, mSp, R.string.device_info,
@@ -227,6 +227,29 @@ public class DeviceInfo extends BaseTestActivity implements OnClickListener {
         }
     }
 
+    public String readInfo(String path) {
+        File file = new File(path);
+        if(!file.exists()) {
+            return "未知(文件不存在)";
+        }
+
+        try {
+            FileReader localFileReader = new FileReader(path);
+            BufferedReader localBufferedReader = new BufferedReader(
+                    localFileReader, 300);
+            String str2 = localBufferedReader.readLine();
+            Log.e("##sunshine##", "read = " + str2);
+            if(null != str2) {
+                return str2;
+            }
+            localBufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "错误";
+        }
+        return "未知";
+    }
+
     private void updateWifiAddress() {
         mWifiInfo = mWifi.getConnectionInfo();
         wifiMacStr = mWifiInfo.getMacAddress();
@@ -255,5 +278,49 @@ public class DeviceInfo extends BaseTestActivity implements OnClickListener {
 
         Log.v(TAG, "TpVersion: " + buff[0] + ", " + buff[1]);
         return buff[0] + "." + buff[1];
+    }
+
+    public String getPhaseCheck() {
+        String result = null;
+        try{
+            Parcel data = Parcel.obtain();
+            Parcel reply = Parcel.obtain();
+            binder.transact(TYPE_GET_PHASECHECK, data, reply, 0);
+            Log.e(TAG, "transact SUCESS!!");
+            int testSign = reply.readInt();
+            int item = reply.readInt();
+            String stationName = reply.readString();
+            String []str = stationName.split(Pattern.quote("|"));
+            String strTestSign = Integer.toBinaryString(testSign);
+            String strItem = Integer.toBinaryString(item);
+            char[] charSign = strTestSign.toCharArray();
+            char[] charItem = strItem.toCharArray();
+            StringBuffer sb = new StringBuffer();
+            Log.e(TAG, "strTestSign = " + strTestSign + " strItem = " + strItem);
+            Log.e(TAG, "charSign = " + charSign + " charItem = " + charItem);
+            Log.e(TAG, "str.length = " + str.length);
+            for(int i=0; i<str.length; i++) {
+                sb.append(str[i]+":"+StationTested(charSign[charSign.length-i-1], charItem[charItem.length-i-1])+"\n");
+            }
+            result = sb.toString();
+            data.recycle();
+            reply.recycle();
+        }catch (Exception ex) {
+            Log.e(TAG, "huasong Exception " + ex.getMessage());
+            result = "get phasecheck fail:" + ex.getMessage();
+        }
+        return result;
+    }
+
+    private String StationTested(char testSign, char item) {
+        Log.e(TAG, "testSign = " + testSign);
+        Log.e(TAG, "item = " + item);
+        if(testSign=='0' && item=='0') {
+            return "PASS";
+        }
+        if(testSign=='0' && item=='1'){
+            return "FAIL";
+        }
+        return "UnTested";
     }
 }

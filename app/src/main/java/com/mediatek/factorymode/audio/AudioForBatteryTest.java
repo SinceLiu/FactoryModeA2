@@ -175,7 +175,7 @@ public class AudioForBatteryTest extends BaseTestActivity implements OnClickList
         audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
                 audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC),
-                AudioManager.FLAG_PLAY_SOUND);
+                AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         audioManager.setMode(AudioManager.MODE_NORMAL);
         initMediaPlayer();
@@ -199,7 +199,7 @@ public class AudioForBatteryTest extends BaseTestActivity implements OnClickList
         audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
                 audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC),
-                AudioManager.FLAG_PLAY_SOUND);
+                AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
     }
     
     @Override
@@ -209,7 +209,7 @@ public class AudioForBatteryTest extends BaseTestActivity implements OnClickList
         audioManager.setRingerMode(oldMode);
     	audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 
     			oldVolume,
-                AudioManager.FLAG_PLAY_SOUND);
+                AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
     }
 
     @Override
@@ -257,10 +257,10 @@ public class AudioForBatteryTest extends BaseTestActivity implements OnClickList
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_VOLUME_UP:
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE , AudioManager.FLAG_PLAY_SOUND);
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE , AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
                 break;
             case KeyEvent.KEYCODE_VOLUME_DOWN:
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER , AudioManager.FLAG_PLAY_SOUND);
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER , AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
                 break;
             default:
                 break;  

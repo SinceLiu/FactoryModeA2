@@ -118,24 +118,7 @@ public class MicRecorder extends BaseTestActivity implements OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //ActionBar.LayoutParams lp =new  ActionBar.LayoutParams(
-        // android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-        // android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-        // Gravity.CENTER);
-
-        // View mView =  LayoutInflater.from(this).inflate(R.layout.title, new LinearLayout(this), false);
-        // TextView mTextView = (TextView) mView.findViewById(R.id.action_bar_title);
-        //getActionBar().setCustomView(mView, lp); 
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-
-        // mTextView.setText(getTitle());
-
-        //getActionBar().setDisplayShowHomeEnabled(false);
-        //getActionBar().setDisplayShowTitleEnabled(false);
-        //getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-        //getActionBar().setDisplayShowCustomEnabled(true);
-        //getActionBar().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
-
         setContentView(R.layout.micrecorder);
         mSp = getSharedPreferences("FactoryMode", Context.MODE_PRIVATE);
         mRecord = (Button) findViewById(R.id.mic_bt_start);
@@ -149,48 +132,31 @@ public class MicRecorder extends BaseTestActivity implements OnClickListener {
         mBtSpkFailed = (Button) findViewById(R.id.speaker_bt_failed);
         mBtSpkFailed.setOnClickListener(this);
         mVUMeter = (VUMeter) findViewById(R.id.uvMeter);
-
         mRecoderControlHandler = new RecoderControlHandler();
-        
         deleteRecordResourceDir();
-        
-        
         audioManager = (AudioManager) this.getSystemService(AUDIO_SERVICE);
         oldMode = audioManager.getRingerMode();
         oldVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
         audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
                 audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC),
-                AudioManager.FLAG_PLAY_SOUND);
+                AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         audioManager.setMode(AudioManager.MODE_NORMAL);
     }
 
-    protected void onResume() {
-        super.onResume();
-        audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
-                audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC),
-                AudioManager.FLAG_PLAY_SOUND);
-    }
-    
     @Override
-    protected void onPause() {
-    	super.onPause();
-
-        audioManager.setRingerMode(oldMode);
-    	audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 
-    			oldVolume,
-                AudioManager.FLAG_PLAY_SOUND);
-    }
-
     protected void onDestroy() {
         super.onDestroy();
-
+        audioManager.setRingerMode(oldMode);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
+                oldVolume,
+                AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
         stopRecording();
         stopPlaying();
 //        deleteRecordResource();
         deleteRecordResourceDir();
+        mRecoderControlHandler.removeCallbacksAndMessages(null);
     }
 
     public void isFinish(){
@@ -264,8 +230,8 @@ public class MicRecorder extends BaseTestActivity implements OnClickListener {
         try {
             mRecorder = new MediaRecorder();
             mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
-            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
+            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             mRecorder.setOutputFile(mSampleFile.getAbsolutePath());
             mRecorder.setOnErrorListener(new OnErrorListener() {
 				

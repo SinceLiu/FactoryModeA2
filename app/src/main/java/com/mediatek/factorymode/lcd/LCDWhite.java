@@ -18,13 +18,14 @@ public class LCDWhite extends SwipeBackActivity{
 
     SharedPreferences mSp;
 
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mSp = getSharedPreferences("FactoryMode", Context.MODE_PRIVATE);
         setContentView(R.layout.lcd);
         mText1 = (TextView) findViewById(R.id.test_color_text1);
         mText1.setBackgroundColor(Color.WHITE);
 
     }
+
 }

@@ -76,6 +76,16 @@
                         android:id="@+id/tp_version"
                     style="@style/info_value" />
                 </LinearLayout>
+
+            <LinearLayout style="@style/entry_layout">
+                <TextView
+                    android:text="@string/device_battery_info"
+                    style="@style/info_label" />
+                <TextView
+                    android:id="@+id/battery_info"
+                    style="@style/info_value" />
+            </LinearLayout>
+
             <!-- RF Info -->
             <LinearLayout style="@style/entry_layout">
                 <TextView
@@ -85,6 +95,7 @@
                     android:id="@+id/rf_info"
                     style="@style/info_value" />
             </LinearLayout>
+
             <TextView
                 android:id="@+id/to_engineer_mode"
                 android:text="@string/device_to_engineer_mode"
